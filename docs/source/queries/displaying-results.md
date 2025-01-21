@@ -8,12 +8,11 @@ To display query results, create a `RowsDisplayer` instance and configure its di
 
 ```rust
 let result: QueryRowsResult = session
-        .query_unpaged("SELECT * FROM examples_ks.basic1", &[])
-        .await?
-        .into_rows_result()?;
-
-    let displayer = result.rows_displayer();
-    println!("{}", displayer);
+    .query_unpaged("SELECT * FROM examples_ks.basic1", &[])
+    .await?
+    .into_rows_result()?;
+let displayer = result.rows_displayer();
+println!("{}", displayer);
 ```
 
 ## Display Settings
