@@ -1,8 +1,7 @@
 use anyhow::Result;
 use scylla::{
     client::{session::Session, session_builder::SessionBuilder},
-    response::query_result::{ByteDisplaying, QueryRowsResult},
-    DeserializeRow,
+    response::{query_result::QueryRowsResult, rows_displayer::ByteDisplaying},
 };
 use std::env;
 
@@ -12,6 +11,7 @@ async fn main() -> Result<()> {
 
     println!("Connecting to {} ...", uri);
 
+    // prepare the session
     let session: Session = SessionBuilder::new().known_node(uri).build().await?;
 
     session.query_unpaged("CREATE KEYSPACE IF NOT EXISTS examples_ks WITH REPLICATION = {'class' : 'NetworkTopologyStrategy', 'replication_factor' : 1}", &[]).await?;
@@ -50,15 +50,6 @@ async fn main() -> Result<()> {
         .execute_unpaged(&prepared, (44_i32, "I'm prepared 3!"))
         .await?;
 
-    // Or as custom structs that derive DeserializeRow
-    #[allow(unused)]
-    #[derive(Debug, DeserializeRow)]
-    struct RowData {
-        a: i32,
-        b: Option<i32>,
-        c: String,
-    }
-
     // example 1 - basic table
     let result: QueryRowsResult = session
         .query_unpaged("SELECT a, b, c FROM examples_ks.basic", &[])
@@ -87,12 +78,12 @@ async fn main() -> Result<()> {
     )
     .await?;
 
-    let result2: QueryRowsResult = session
+    let result: QueryRowsResult = session
         .query_unpaged("SELECT * FROM examples_ks.basic4", &[])
         .await?
         .into_rows_result()?;
 
-    let mut displayer = result2.rows_displayer();
+    let mut displayer = result.rows_displayer();
     displayer.set_blob_displaying(ByteDisplaying::Ascii);
     println!("\nblob, double, float, time, timestamp:");
     println!("{}", displayer);
@@ -152,12 +143,12 @@ async fn main() -> Result<()> {
         )
         .await?;
 
-    let result2: QueryRowsResult = session
+    let result: QueryRowsResult = session
         .query_unpaged("SELECT * FROM examples_ks.basic6", &[])
         .await?
         .into_rows_result()?;
 
-    let mut displayer = result2.rows_displayer();
+    let mut displayer = result.rows_displayer();
     println!("\ndate, duration, ip address, timeuuid:");
     println!("{}", displayer);
 
@@ -183,12 +174,12 @@ async fn main() -> Result<()> {
     )
     .await?;
 
-    let result4: QueryRowsResult = session
+    let result: QueryRowsResult = session
         .query_unpaged("SELECT * FROM examples_ks.upcoming_calendar", &[])
         .await?
         .into_rows_result()?;
 
-    let displayer = result4.rows_displayer();
+    let displayer = result.rows_displayer();
     println!("\nList:");
     println!("{}", displayer);
 
@@ -215,12 +206,12 @@ async fn main() -> Result<()> {
             )
     .await?;
 
-    let result4: QueryRowsResult = session
+    let result: QueryRowsResult = session
         .query_unpaged("SELECT * FROM examples_ks.cyclist_teams", &[])
         .await?
         .into_rows_result()?;
 
-    let displayer = result4.rows_displayer();
+    let displayer = result.rows_displayer();
     println!("\nMap:");
     println!("{}", displayer);
 
@@ -242,12 +233,12 @@ async fn main() -> Result<()> {
             )
     .await?;
 
-    let result4: QueryRowsResult = session
+    let result: QueryRowsResult = session
         .query_unpaged("SELECT * FROM examples_ks.cyclist_career_teams", &[])
         .await?
         .into_rows_result()?;
 
-    let displayer = result4.rows_displayer();
+    let displayer = result.rows_displayer();
     println!("\nSet:");
     println!("{}", displayer);
 
@@ -284,12 +275,12 @@ async fn main() -> Result<()> {
         )
         .await?;
 
-    let result4: QueryRowsResult = session
+    let result: QueryRowsResult = session
         .query_unpaged("SELECT * FROM examples_ks.cyclist_stats", &[])
         .await?
         .into_rows_result()?;
 
-    let displayer = result4.rows_displayer();
+    let displayer = result.rows_displayer();
     println!("\nUser defined type:");
     println!("{}", displayer);
 
@@ -311,12 +302,12 @@ async fn main() -> Result<()> {
             )
     .await?;
 
-    let result4: QueryRowsResult = session
+    let result: QueryRowsResult = session
         .query_unpaged("SELECT * FROM examples_ks.route", &[])
         .await?
         .into_rows_result()?;
 
-    let displayer = result4.rows_displayer();
+    let displayer = result.rows_displayer();
     println!("\nTuples:");
     println!("{}", displayer);
 
