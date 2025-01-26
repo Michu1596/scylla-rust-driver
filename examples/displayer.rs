@@ -1,7 +1,7 @@
 use anyhow::Result;
 use scylla::{
     client::{session::Session, session_builder::SessionBuilder},
-    response::{query_result::QueryRowsResult, rows_displayer::ByteDisplaying},
+    response::{query_result::QueryRowsResult, rows_displayer::ByteDisplaying, PagingState},
 };
 use std::env;
 
@@ -51,10 +51,15 @@ async fn main() -> Result<()> {
         .await?;
 
     // example 1 - basic table
-    let result: QueryRowsResult = session
-        .query_unpaged("SELECT a, b, c FROM examples_ks.basic", &[])
-        .await?
-        .into_rows_result()?;
+
+    // fetch the data
+    let paging_state: PagingState = PagingState::start();
+    let (res, _) = session
+        .query_single_page("SELECT a, b, c FROM examples_ks.basic", &[], paging_state)
+        .await?;
+    // all the data is in the first page, so there is no need to fetch more pages
+
+    let result = res.into_rows_result()?;
 
     let displayer = result.rows_displayer();
     println!("\nlong text and special characters:");
@@ -78,10 +83,14 @@ async fn main() -> Result<()> {
     )
     .await?;
 
-    let result: QueryRowsResult = session
-        .query_unpaged("SELECT * FROM examples_ks.basic4", &[])
-        .await?
-        .into_rows_result()?;
+    // fetch the data
+    let paging_state: PagingState = PagingState::start();
+    let (res, _) = session
+        .query_single_page("SELECT * FROM examples_ks.basic4", &[], paging_state)
+        .await?;
+    // all the data is in the first page, so there is no need to fetch more pages
+
+    let result = res.into_rows_result()?;
 
     let mut displayer = result.rows_displayer();
     displayer.set_blob_displaying(ByteDisplaying::Ascii);
@@ -143,10 +152,13 @@ async fn main() -> Result<()> {
         )
         .await?;
 
-    let result: QueryRowsResult = session
-        .query_unpaged("SELECT * FROM examples_ks.basic6", &[])
-        .await?
-        .into_rows_result()?;
+    // fetch the data
+    let paging_state: PagingState = PagingState::start();
+    let (res, _) = session
+        .query_single_page("SELECT * FROM examples_ks.basic6", &[], paging_state)
+        .await?;
+    // all the data is in the first page, so there is no need to fetch more pages
+    let result = res.into_rows_result()?;
 
     let mut displayer = result.rows_displayer();
     println!("\ndate, duration, ip address, timeuuid:");
@@ -174,10 +186,17 @@ async fn main() -> Result<()> {
     )
     .await?;
 
-    let result: QueryRowsResult = session
-        .query_unpaged("SELECT * FROM examples_ks.upcoming_calendar", &[])
-        .await?
-        .into_rows_result()?;
+    // fetch the data
+    let paging_state: PagingState = PagingState::start();
+    let (res, _) = session
+        .query_single_page(
+            "SELECT * FROM examples_ks.upcoming_calendar",
+            &[],
+            paging_state,
+        )
+        .await?;
+    // all the data is in the first page, so there is no need to fetch more pages
+    let result = res.into_rows_result()?;
 
     let displayer = result.rows_displayer();
     println!("\nList:");
@@ -206,10 +225,13 @@ async fn main() -> Result<()> {
             )
     .await?;
 
-    let result: QueryRowsResult = session
-        .query_unpaged("SELECT * FROM examples_ks.cyclist_teams", &[])
-        .await?
-        .into_rows_result()?;
+    // fetch the data
+    let paging_state: PagingState = PagingState::start();
+    let (res, _) = session
+        .query_single_page("SELECT * FROM examples_ks.cyclist_teams", &[], paging_state)
+        .await?;
+    // all the data is in the first page, so there is no need to fetch more pages
+    let result = res.into_rows_result()?;
 
     let displayer = result.rows_displayer();
     println!("\nMap:");
@@ -233,10 +255,17 @@ async fn main() -> Result<()> {
             )
     .await?;
 
-    let result: QueryRowsResult = session
-        .query_unpaged("SELECT * FROM examples_ks.cyclist_career_teams", &[])
-        .await?
-        .into_rows_result()?;
+    // fetch the data
+    let paging_state: PagingState = PagingState::start();
+    let (res, _) = session
+        .query_single_page(
+            "SELECT * FROM examples_ks.cyclist_career_teams",
+            &[],
+            paging_state,
+        )
+        .await?;
+    // all the data is in the first page, so there is no need to fetch more pages
+    let result = res.into_rows_result()?;
 
     let displayer = result.rows_displayer();
     println!("\nSet:");
@@ -302,10 +331,13 @@ async fn main() -> Result<()> {
             )
     .await?;
 
-    let result: QueryRowsResult = session
-        .query_unpaged("SELECT * FROM examples_ks.route", &[])
-        .await?
-        .into_rows_result()?;
+    // fetch the data
+    let paging_state: PagingState = PagingState::start();
+    let (res, _) = session
+        .query_single_page("SELECT * FROM examples_ks.route", &[], paging_state)
+        .await?;
+    // all the data is in the first page, so there is no need to fetch more pages
+    let result = res.into_rows_result()?;
 
     let displayer = result.rows_displayer();
     println!("\nTuples:");

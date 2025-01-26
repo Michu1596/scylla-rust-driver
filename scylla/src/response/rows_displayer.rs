@@ -329,20 +329,20 @@ impl Default for RowsDisplayerSettings {
 
 #[derive(Clone, Debug)]
 struct ValueColors {
-    pub text: &'static str,
-    pub error: &'static str,
-    pub blob: &'static str,
-    pub timestamp: &'static str,
-    pub date: &'static str,
-    pub time: &'static str,
-    pub int: &'static str,
-    pub float: &'static str,
-    pub decimal: &'static str,
-    pub inet: &'static str,
-    pub boolean: &'static str,
-    pub uuid: &'static str,
-    pub duration: &'static str,
-    pub collection: &'static str,
+    text: &'static str,
+    error: &'static str,
+    blob: &'static str,
+    timestamp: &'static str,
+    date: &'static str,
+    time: &'static str,
+    int: &'static str,
+    float: &'static str,
+    decimal: &'static str,
+    inet: &'static str,
+    boolean: &'static str,
+    uuid: &'static str,
+    duration: &'static str,
+    collection: &'static str,
 }
 
 impl Default for ValueColors {
@@ -808,55 +808,38 @@ impl fmt::Display for WrapperDisplay<'_, CqlDuration> {
         let seconds = (nanoseconds % 60_000_000_000) / 1_000_000_000;
         let nanoseconds = nanoseconds % 1_000_000_000;
 
-        // let mut result = String::new();
         if years != 0 {
-            // result.push_str(&format!("{}y", years));
             write_colored!(f, if_color, color, "{}y", years)?;
         }
 
         if months != 0 {
-            // result.push_str(&format!("{}mo", months));
             write_colored!(f, if_color, color, "{}mo", months)?;
         }
 
         if weeks != 0 {
-            // result.push_str(&format!("{}w", weeks));
             write_colored!(f, if_color, color, "{}w", weeks)?;
         }
 
         if days != 0 {
-            // result.push_str(&format!("{}d", days));
             write_colored!(f, if_color, color, "{}d", days)?;
         }
 
         if hours != 0 {
-            // result.push_str(&format!("{}h", hours));
             write_colored!(f, if_color, color, "{}h", hours)?;
         }
 
         if minutes != 0 {
-            // result.push_str(&format!("{}m", minutes));
             write_colored!(f, if_color, color, "{}m", minutes)?;
         }
 
         if seconds != 0 {
-            // result.push_str(&format!("{}s", seconds));
             write_colored!(f, if_color, color, "{}s", seconds)?;
         }
 
         if nanoseconds != 0 {
-            // result.push_str(&format!("{}ns", nanoseconds));
             write_colored!(f, if_color, color, "{}ns", nanoseconds)?;
         }
         Ok(())
-        // Format the time with 9 digits of nanoseconds
-        // write_colored!(
-        //     f,
-        //     self.settings.print_in_color,
-        //     self.settings.colors.duration,
-        //     "{}",
-        //     result
-        // )
     }
 }
 
@@ -864,8 +847,11 @@ impl fmt::Display for WrapperDisplay<'_, CqlDuration> {
 impl fmt::Display for WrapperDisplay<'_, CqlDate> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // example of formating date 2021-12-31
+        // CqlDate is Represented as number of days since -5877641-06-23 i.e. 2^31 days before unix epoch.
         let magic_constant = 2055453495; // it is number of days from -5877641-06-23 to -250000-01-01
                                          // around -250000-01-01  is the limit of naive date
+                                         // without this constant we can't convert days to date
+                                         // because from_ymd_opt will return None
 
         let days = self.value.0 - magic_constant;
         let base_date = NaiveDate::from_ymd_opt(-250000, 1, 1).unwrap();
@@ -956,23 +942,25 @@ fn display_in_quotes_and_colored<'a>(
 impl fmt::Display for WrapperDisplay<'_, Vec<CqlValue>> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // choose opening bracket
-        if matches!(self.cql_value, CqlValue::List(_)) {
-            write_colored!(
+        match self.cql_value {
+            CqlValue::List(_) => write_colored!(
                 f,
                 self.settings.print_in_color,
                 self.settings.colors.collection,
                 "["
-            )?;
-        } else if matches!(self.cql_value, CqlValue::Set(_)) {
-            // it is a set
-            write_colored!(
+            )?,
+            CqlValue::Set(_) => write_colored!(
                 f,
                 self.settings.print_in_color,
                 self.settings.colors.collection,
                 "{{"
-            )?;
-        } else {
-            panic!("BUG"); // Describe the reason why it might happen.
+            )?,
+            _ => write_colored!(
+                f,
+                self.settings.print_in_color,
+                self.settings.colors.error,
+                "Invalid type of collection. Expected List or Set",
+            )?,
         }
 
         // print elements
@@ -1002,24 +990,27 @@ impl fmt::Display for WrapperDisplay<'_, Vec<CqlValue>> {
         }
 
         // choose closing bracket
-        if matches!(self.cql_value, CqlValue::List(_)) {
-            write_colored!(
+        match self.cql_value {
+            CqlValue::List(_) => write_colored!(
                 f,
                 self.settings.print_in_color,
                 self.settings.colors.collection,
                 "]"
-            )
-        } else if matches!(self.cql_value, CqlValue::Set(_)) {
-            // it is a set
-            write_colored!(
+            )?,
+            CqlValue::Set(_) => write_colored!(
                 f,
                 self.settings.print_in_color,
                 self.settings.colors.collection,
                 "}}"
-            )
-        } else {
-            panic!("BUG") // Describe the reason why it might happen.
+            )?,
+            _ => write_colored!(
+                f,
+                self.settings.print_in_color,
+                self.settings.colors.error,
+                "Invalid type of collection. Expected List or Set",
+            )?,
         }
+        Ok(())
     }
 }
 

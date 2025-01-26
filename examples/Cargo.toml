@@ -133,4 +133,3 @@ path = "execution_profile.rs"
 [[example]]
 name = "displayer"
 path = "displayer.rs"
-futures = ["result-displayer"]

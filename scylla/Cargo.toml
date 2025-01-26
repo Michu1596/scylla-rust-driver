@@ -39,7 +39,7 @@ full-serialization = [
     "num-bigint-04",
     "bigdecimal-04",
 ]
-result-displayer = ["dep:tabled", "dep:inline_colorization"]
+result-displayer = ["dep:tabled", "dep:inline_colorization", "dep:num-bigint-04", "dep:bigdecimal-04"]
 
 [dependencies]
 scylla-macros = { version = "0.7.0", path = "../scylla-macros" }
@@ -80,10 +80,12 @@ socket2 = { version = "0.5.3", features = ["all"] }
 lazy_static = "1"
 tabled =  { version = "0.17.0", features = ["std", "ansi"], optional = true }
 inline_colorization = { version = "0.1.6", optional = true }
-num-bigint-04 = { package = "num-bigint", version = "0.4" }
-bigdecimal-04 = { package = "bigdecimal", version = "0.4" }
+num-bigint-04 = { package = "num-bigint", version = "0.4", optional = true }
+bigdecimal-04 = { package = "bigdecimal", version = "0.4", optional = true }
 
 [dev-dependencies]
+num-bigint-04 = { package = "num-bigint", version = "0.4" }
+bigdecimal-04 = { package = "bigdecimal", version = "0.4" }
 num-bigint-03 = { package = "num-bigint", version = "0.3" }
 scylla-proxy = { version = "0.0.3", path = "../scylla-proxy" }
 ntest = "0.9.3"

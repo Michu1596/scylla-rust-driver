@@ -447,6 +447,9 @@ impl QueryRowsResult {
         (raw_rows_with_metadata, tracing_id, warnings)
     }
 
+    /// Returns a displayer for the rows.
+    ///
+    /// This method is only available when the `result-displayer` feature is enabled.
     #[cfg(feature = "result-displayer")]
     pub fn rows_displayer(&self) -> RowsDisplayer<'_> {
         RowsDisplayer::new(self)
